@@ -32,6 +32,18 @@ app.get('/api/persons', (request, response) => {
 
 app.post('/api/persons', (request, response) => {
     const person = request.body
+
+    if (!person.name) {
+        response.status(400).json({error: 'no name found'})
+        return
+    } else if (!person.number) {
+        response.status(400).json({error: 'no number found'})
+        return
+    } else if (persons.map(p => p.name).includes(person.name)) {
+        response.status(400).json({error: 'name must be unique'})
+        return
+    }
+
     person.id = Math.round(Math.random()*100_000)
     persons = persons.concat(person)
 
