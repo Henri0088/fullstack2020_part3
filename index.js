@@ -24,7 +24,17 @@ let persons = [
     }
 ]
 
+app.use(express.json())
+
 app.get('/api/persons', (request, response) => {
+    response.json(persons)
+})
+
+app.post('/api/persons', (request, response) => {
+    const person = request.body
+    person.id = Math.round(Math.random()*100_000)
+    persons = persons.concat(person)
+
     response.json(persons)
 })
 
@@ -40,7 +50,6 @@ app.get('/api/persons/:id', (request, response) => {
 })
 
 app.delete('/api/persons/:id', (request, response) => {
-    console.log('yep')
     const id = Number(request.params.id)
     persons = persons.filter(p => p.id !== id)
 
