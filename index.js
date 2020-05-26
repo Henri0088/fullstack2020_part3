@@ -25,7 +25,6 @@ let persons = [
 ]
 
 app.get('/api/persons', (request, response) => {
-    console.log('lol')
     response.json(persons)
 })
 
@@ -38,6 +37,14 @@ app.get('/api/persons/:id', (request, response) => {
     } else {
         response.status(404).end()
     }
+})
+
+app.delete('/api/persons/:id', (request, response) => {
+    console.log('yep')
+    const id = Number(request.params.id)
+    persons = persons.filter(p => p.id !== id)
+
+    response.status(204).end()
 })
 
 app.get('/info', (request, response) => {
