@@ -65,6 +65,15 @@ app.get('/api/persons/:id', (request, response) => {
     }
 })
 
+app.put('/api/persons/:id', (request, response) => {
+    const person = Object.assign({}, request.body)
+
+    pToModify = persons.find(p => p.id === person.id)
+    pToModify.number = person.number
+
+    response.json(pToModify)
+})
+
 app.delete('/api/persons/:id', (request, response) => {
     const id = Number(request.params.id)
     persons = persons.filter(p => p.id !== id)
