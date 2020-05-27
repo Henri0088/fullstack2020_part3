@@ -26,15 +26,16 @@ let persons = [
 ]
 
 app.use(express.json())
-app.use(morgan('tiny'))
+
+morgan.token('post-data', (req) => JSON.stringify(req.body))
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :post-data'))
 
 app.get('/api/persons', (request, response) => {
     response.json(persons)
 })
 
 app.post('/api/persons', (request, response) => {
-    const person = request.body
-
+    const person = Object.assign({}, request.body)
     if (!person.name) {
         response.status(400).json({error: 'no name found'})
         return
@@ -48,7 +49,7 @@ app.post('/api/persons', (request, response) => {
 
     person.id = Math.round(Math.random()*100_000)
     persons = persons.concat(person)
-
+    
     response.json(persons)
 })
 
