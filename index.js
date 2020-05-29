@@ -1,6 +1,8 @@
+require('dotenv').config()
 const express = require('express')
 const morgan = require('morgan')
 const cors = require('cors')
+const Contact = require('./models/contact')
 const app = express()
 
 let persons = [
@@ -33,7 +35,9 @@ morgan.token('post-data', (req) => JSON.stringify(req.body))
 app.use(morgan(':method :url :status :res[content-length] - :response-time ms :post-data'))
 
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
+    Contact.find({}).then(result => {
+        response.json(result)
+    })
 })
 
 app.post('/api/persons', (request, response) => {
@@ -44,15 +48,20 @@ app.post('/api/persons', (request, response) => {
     } else if (!person.number) {
         response.status(400).json({error: 'no number found'})
         return
-    } else if (persons.map(p => p.name).includes(person.name)) {
-        response.status(400).json({error: 'name must be unique'})
-        return
     }
 
-    person.id = Math.round(Math.random()*100_000)
-    persons = persons.concat(person)
+    const newPerson = new Contact({
+        name: person.name,
+        number: person.number,
+    })
+
+    newPerson.save().then(savedPerson => {
+        console.log(`Saved ${savedPerson} successfully`)
+        Contact.find({}).then(result => {
+            response.json(result)
+        })
+    })
     
-    response.json(persons)
 })
 
 app.get('/api/persons/:id', (request, response) => {
