@@ -75,24 +75,28 @@ app.get('/api/persons/:id', (request, response) => {
     }
 })
 
-app.put('/api/persons/:id', (request, response) => {
-    const person = Object.assign({}, request.body)
+app.put('/api/persons/:id', (request, response, next) => {
+    const newInfo = request.body
 
-    pToModify = persons.find(p => p.id === person.id)
-    pToModify.number = person.number
+    const contact = {
+        name: newInfo.name,
+        number: newInfo.number
+    }
 
-    response.json(pToModify)
+    Contact.findByIdAndUpdate(request.params.id, contact, { new: true })
+        .then(updatedContact => {
+            response.json(updatedContact)
+        })
+        .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
     const id = request.params.id
     Contact.findByIdAndRemove(id)
         .then(result => {
             response.status(204).end()
         })
-        .catch(error => {
-            console.log(error)
-        })
+        .catch(error => next(error))
 })
 
 app.get('/info', (request, response) => {
@@ -103,6 +107,21 @@ app.get('/info', (request, response) => {
     const page = (`<p>Phonebook has info for ${persons.length} people <br> ${day} ${time} </p>`)
     response.send(page)
 })
+
+const unknownEndpoint = (req, res) => {
+    res.status(404).send({error: 'unknown endpoint'})
+}
+
+app.use(unknownEndpoint)
+
+const errorHandler = (error, req, res, next) => {
+    if (error.name === "CastError") {
+        return res.status(400).send({error: 'malformatted id'})
+    }
+    next(error)
+}
+
+app.use(errorHandler)
 
 const port = process.env.PORT || 3001
 app.listen(port, () => {
