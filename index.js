@@ -65,14 +65,13 @@ app.post('/api/persons', (request, response) => {
 })
 
 app.get('/api/persons/:id', (request, response) => {
-    const id = Number(request.params.id)
-    const person = persons.find(p =>  p.id === id)
-
-    if (person) {
-        response.json(person)
-    } else {
-        response.status(404).end()
-    }
+    const id = request.params.id
+    
+    Contact.findById(id)
+        .then(result => {
+            response.json(result)
+        })
+        .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
@@ -103,9 +102,12 @@ app.get('/info', (request, response) => {
     let date = new Date()
     let day = date.toDateString()
     let time = date.toTimeString()
-
-    const page = (`<p>Phonebook has info for ${persons.length} people <br> ${day} ${time} </p>`)
-    response.send(page)
+    
+    Contact.countDocuments({})
+        .then(count => {
+            const page = (`<p>Phonebook has info for ${count} people <br> ${day} ${time} </p>`)
+        response.send(page)
+        })
 })
 
 const unknownEndpoint = (req, res) => {
