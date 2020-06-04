@@ -5,29 +5,6 @@ const cors = require('cors')
 const Contact = require('./models/contact')
 const app = express()
 
-let persons = [
-    {
-        name: "Arto Hellas",
-        number: "040-123456",
-        id: 1
-    },
-    {
-        name: "Ada Lovelace",
-        number: "39-44-532523523",
-        id: 2
-    },
-    {
-        name: "Dan Abramov",
-        number: "12-23-7858595",
-        id: 3
-    },
-    {
-        name: "Mary Poppendieck",
-        number: "44-23-9293222",
-        id: 4
-    }
-]
-
 app.use(express.static('build'))
 app.use(cors())
 app.use(express.json())
@@ -40,16 +17,9 @@ app.get('/api/persons', (request, response) => {
     })
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const person = Object.assign({}, request.body)
-    if (!person.name) {
-        response.status(400).json({error: 'no name found'})
-        return
-    } else if (!person.number) {
-        response.status(400).json({error: 'no number found'})
-        return
-    }
-
+    
     const newPerson = new Contact({
         name: person.name,
         number: person.number,
@@ -61,6 +31,7 @@ app.post('/api/persons', (request, response) => {
             response.json(result)
         })
     })
+    .catch(error => next(error))
     
 })
 
@@ -119,6 +90,8 @@ app.use(unknownEndpoint)
 const errorHandler = (error, req, res, next) => {
     if (error.name === "CastError") {
         return res.status(400).send({error: 'malformatted id'})
+    } else if (error.name === "ValidationError") {
+        return res.status(400).json({ error: error.message })
     }
     next(error)
 }
